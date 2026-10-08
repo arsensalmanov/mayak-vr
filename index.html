@@ -53,7 +53,7 @@ html, body { margin: 0; }
   <div class="controls">
     <button id="vr" class="primary" type="button" disabled>Проверяю VR…</button>
     <button id="daynight" type="button" aria-pressed="false">Включить день</button>
-    <span class="hint">В VR: курок переносит на следующую точку обзора, боковая кнопка меняет день и ночь.</span>
+    <span class="hint">В VR: левый стик — идти, правый — вверх, вниз и поворот. Курок переносит на следующую точку обзора, боковая кнопка меняет день и ночь.</span>
   </div>
   <div id="fallback" hidden>Этот браузер не смог запустить 3D-графику (WebGL). Откройте страницу в другом браузере.</div>
 </div>
@@ -321,7 +321,7 @@ html, body { margin: 0; }
     }
     waves(reduced ? t * 0.35 : t);
     beams.rotation.y = -t * (Math.PI * 2 / 12);
-    if (!renderer.xr.isPresenting) controls.update();
+    if (renderer.xr.isPresenting) locomotion(dt); else controls.update();
     renderer.render(scene, camera);
   }
 
@@ -345,6 +345,45 @@ html, body { margin: 0; }
     ctrl.addEventListener('squeeze', toggleDay);
     rig.add(ctrl);
   }
+  /* Thumbsticks: left walks where you look, right flies up/down and snap-turns. */
+  var MOVE_SPEED = 4, FLY_SPEED = 3, SNAP = Math.PI / 6, DEAD = 0.15;
+  var fwd = new THREE.Vector3(), headPos = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0), snapLatch = false;
+  function locomotion(dt) {
+    var s = renderer.xr.getSession();
+    if (!s) return;
+    camera.getWorldDirection(fwd);
+    fwd.y = 0;
+    if (fwd.lengthSq() < 1e-4) return;
+    fwd.normalize();
+    var sources = s.inputSources;
+    for (var i = 0; i < sources.length; i++) {
+      var gp = sources[i].gamepad;
+      if (!gp || !gp.axes || gp.axes.length < 2) continue;
+      var ax = gp.axes.length >= 4 ? gp.axes[2] : gp.axes[0];
+      var ay = gp.axes.length >= 4 ? gp.axes[3] : gp.axes[1];
+      if (Math.abs(ax) < DEAD) ax = 0;
+      if (Math.abs(ay) < DEAD) ay = 0;
+      if (sources[i].handedness === 'right') {
+        rig.position.y += -ay * FLY_SPEED * dt;
+        if (Math.abs(ax) > 0.6 && !snapLatch) {
+          snapLatch = true;
+          var ang = ax > 0 ? -SNAP : SNAP;
+          camera.getWorldPosition(headPos);
+          rig.position.sub(headPos).applyAxisAngle(UP, ang).add(headPos);
+          rig.rotation.y += ang;
+        } else if (Math.abs(ax) < 0.3) {
+          snapLatch = false;
+        }
+      } else {
+        rig.position.x += (fwd.x * -ay - fwd.z * ax) * MOVE_SPEED * dt;
+        rig.position.z += (fwd.z * -ay + fwd.x * ax) * MOVE_SPEED * dt;
+      }
+    }
+    rig.position.y = Math.max(0.4, Math.min(80, rig.position.y));
+    var d = Math.sqrt(rig.position.x * rig.position.x + rig.position.z * rig.position.z);
+    if (d > 160) { rig.position.x *= 160 / d; rig.position.z *= 160 / d; }
+  }
+
   var vrBtn = document.getElementById('vr'), session = null;
   renderer.xr.addEventListener('sessionstart', function () {
     saved = { p: camera.position.clone(), q: camera.quaternion.clone() };
