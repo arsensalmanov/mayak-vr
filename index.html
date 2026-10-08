@@ -48,7 +48,7 @@ html, body { margin: 0; }
 <div id="stage">
   <div class="caption">
     <h1>Маленький маяк</h1>
-    <div class="light">Пр 6с · огонь 17 м над морем</div>
+    <div class="light">Пр 6с · огонь 11 м над морем</div>
   </div>
   <div class="controls">
     <button id="vr" class="primary" type="button" disabled>Проверяю VR…</button>
@@ -81,7 +81,7 @@ html, body { margin: 0; }
   var scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(0x1b2a4a, 0.011);
   var camera = new THREE.PerspectiveCamera(42, 1, 0.1, 700);
-  camera.position.set(27, 10, 33);
+  camera.position.set(22, 8, 27);
   var rig = new THREE.Group();
   rig.add(camera);
   scene.add(rig);
@@ -180,7 +180,7 @@ html, body { margin: 0; }
   var tower = new THREE.Group();
   scene.add(tower);
   add(new THREE.CylinderGeometry(1.9, 2.15, 0.9, 10), stone, 0, 1.3, 0, tower);
-  var TH = 14, NS = 6, D = TH - 8;
+  var TH = 8, NS = 4, D = TH - 8;
   var rAt = function (k) { return 1.5 - 0.5 * k; };
   for (var s = 0; s < NS; s++) {
     add(new THREE.CylinderGeometry(rAt((s + 1) / NS), rAt(s / NS), TH / NS, 28), s % 2 ? red : white, 0, 1.75 + (s + 0.5) * TH / NS, 0, tower);
@@ -213,11 +213,9 @@ html, body { margin: 0; }
     return m;
   }
   onWall(new THREE.BoxGeometry(0.7, 1.3, 0.16), dark, 2.4, 1.46, face);
-  onWall(new THREE.BoxGeometry(0.36, 0.56, 0.14), winMat, 5.2, 1.4, face);
-  onWall(new THREE.BoxGeometry(0.34, 0.52, 0.14), winMat, 9, 1.26, face);
-  onWall(new THREE.BoxGeometry(0.32, 0.5, 0.14), winMat, 12.6, 1.13, face);
-  onWall(new THREE.BoxGeometry(0.32, 0.5, 0.14), winMat, 7.2, 1.33, face + 2.2);
-  onWall(new THREE.BoxGeometry(0.32, 0.5, 0.14), winMat, 11, 1.19, face - 2.3);
+  onWall(new THREE.BoxGeometry(0.36, 0.56, 0.14), winMat, 5.2, 1.3, face);
+  onWall(new THREE.BoxGeometry(0.32, 0.5, 0.14), winMat, 7.9, 1.13, face + 2.2);
+  onWall(new THREE.BoxGeometry(0.32, 0.5, 0.14), winMat, 6.4, 1.22, face - 2.3);
 
   /* Keeper's cottage */
   var house = new THREE.Group();
@@ -240,10 +238,10 @@ html, body { margin: 0; }
 
   /* Light: lamp glow and two opposite beams. One turn in 12 s gives a flash every 6 s. */
   var lamp = new THREE.PointLight(0xffd98a, 1.3, 26, 2);
-  lamp.position.set(0, 16.68, 0);
+  lamp.position.set(0, 10.68, 0);
   scene.add(lamp);
   var beams = new THREE.Group();
-  beams.position.set(0, 16.68, 0);
+  beams.position.set(0, 10.68, 0);
   scene.add(beams);
   var beamMat = new THREE.MeshBasicMaterial({ color: 0xffe6a6, transparent: true, opacity: 0.15, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });
   var spots = [];
@@ -253,7 +251,7 @@ html, body { margin: 0; }
     g.rotateZ(dir * Math.PI / 2);
     beams.add(new THREE.Mesh(g, beamMat));
     var sp = new THREE.SpotLight(0xffe2a0, 2.4, 90, 0.2, 0.7, 1);
-    sp.target.position.set(dir * 20, -8, 0);
+    sp.target.position.set(dir * 20, -5, 0);
     beams.add(sp); beams.add(sp.target);
     spots.push(sp);
   });
@@ -261,7 +259,7 @@ html, body { margin: 0; }
 
   /* Controls */
   var controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls.target.set(0, 8.2, 0);
+  controls.target.set(0, 5.6, 0);
   controls.enableDamping = true;
   controls.enablePan = false;
   controls.minDistance = 14;
@@ -330,7 +328,7 @@ html, body { margin: 0; }
   var spots3 = [
     { pos: [3.1, 1.3, 3.6], look: [0, 0, 0] },            /* on the grass by the door */
     { pos: [15, 1.1, 13], look: [0, 0, 0] },              /* on the jetty, whole tower in view */
-    { pos: [Math.sin(face) * 1.14, 15.98, Math.cos(face) * 1.14], look: [Math.sin(face) * 9, 0, Math.cos(face) * 9] } /* on the gallery, facing the sea */
+    { pos: [Math.sin(face) * 1.14, 9.98, Math.cos(face) * 1.14], look: [Math.sin(face) * 9, 0, Math.cos(face) * 9] } /* on the gallery, facing the sea */
   ];
   var spotIx = 0, saved = null;
   function standAt(i) {
